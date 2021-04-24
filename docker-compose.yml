@@ -2,13 +2,18 @@ version: "3.3"
 services: 
   web:
     build: ./Product
-    command: gunicorn Product.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn Product.wsgi:application --bind 0.0.0.0:8000 --reload
     volumes: 
       - ./Product/:/crm/
+    environment: 
+      - DEBUG=1
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
     expose: 
       - 8000
     depends_on: 
       - db
+      - redis
   db:
     image: mysql:5.7
     ports: 
@@ -32,6 +37,23 @@ services:
     restart: always
     depends_on: 
       - web
-
+  redis:
+    image: redis:latest
+    expose: 
+      - '6379'
+    ports: 
+      - '6379:6379'
+  celery:
+    build: ./Product
+    command: celery -A Product worker -l INFO
+    volumes: 
+      - ./Product/:/crm/
+    environment: 
+      - DEBUG=1
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on: 
+      - web
+      - redis
 volumes: 
   static_volume:

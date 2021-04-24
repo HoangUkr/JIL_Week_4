@@ -37,7 +37,11 @@
     <div class="col">
         <div class="card card-body">
             <form method="GET">
-                <button class="btn btn-primary" type="submit">Search</button>
+                <label for="start">Start date: </label>
+                <input type="date" id="start" name="start-date" value="" min="2021-01-01" max="2021-31-12">
+                <label for="end">End date: </label>
+                <input type="date" id="end" name="end-date" value="" min="2021-01-01" max="2021-31-12">
+                <button class="btn btn-primary" type="submit" href="{% url 'customer' customer.id %}">Search</button>
             </form>
         </div>
     </div>
