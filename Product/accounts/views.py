@@ -2,7 +2,10 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import *
 from .forms import OrderForm, CustomerForm, ProductForm
-from .task import generate_report
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .task import *
+from celery.result import AsyncResult
 
 # Create your views here.
 def home(request):
@@ -89,24 +92,32 @@ def createProduct(request):
     return render(request, 'accounts/product_form.html', context)
 
 def ReportPage(request):
-    orders = Order.objects.all()
-    list_context = []
-    context = {}
-    for order in orders:
-        create_date = order.date_created
-        customer_name = order.customer.name
-        product_name = order.product.name
-        category = order.product.category
-        price = order.product.price
-        context = {
-            'Date' : create_date,
-            'Customer' : customer_name, 
-            'Product' : product_name, 
-            'Category' : category,
-            'Price' : price}
-        list_context.append(context)
-    
-    #generate_report(list_context)
-    return render(request, 'accounts/report.html')
+    generate_btn = request.POST.get('Generate')
+    refresh_btn = request.POST.get('Refresh')
+    query_result = Report.objects.all()
+    if generate_btn:
+        task = generate_report.apply_async()
+        status = get_task_status(task.id)
+        a = Report(task_id = task.id, path = status['Path'], status = status['Status'])
+        a.save()
+        query_result = Report.objects.all()
+    if refresh_btn:
+        id = Report.objects.latest('task_id')
+        new_status = get_task_status(id)
+        a = Report.objects.get(task_id = id)
+        a.status = str(new_status['Status'])
+        a.save()
+        query_result = Report.objects.all()
 
-    
+    context = {'query_result' : query_result}
+    return render(request, 'accounts/report.html', context)
+"""
+def generate_report_trigger(request):
+    task = generate_report.apply_async()
+    status = get_task_status(task.id)
+    Report.objects.create(task_id = task.id, path = status['Path'], status = status['Status'])
+    query_result = Report.objects.all()
+    context = {'query_result' : query_result}
+def refresh(request):
+    pass
+"""

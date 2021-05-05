@@ -6,15 +6,40 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md">
-        <div class="card card-body">
-            <table class="table table-sm">
-                <tr>
-                    <td>Task ID</td>
-                    <td>Report download path</td>
-                    <td>Status</td>
-                </tr>
-            </table>
+    <div class="col">
+        <form class="" action="" method="POST">
+            {% csrf_token %}
+            {{ from.as_p}}
+            <input type="submit" name="Generate" value="Generate" />
+            <input type="submit" name="Refresh" value="Refresh" />
+        </form>
+    </div>
+    <div class="w-100"></div>
+    <div class="col">
+        <div class="row">
+            <div class="col-md">
+                <div class="card card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Task ID</th>
+                                <th>Report download path</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        
+                        <tbody id="tasks">
+                            {% for item in query_result %}
+                            <tr>
+                                <td>{{ item.task_id }}</td>
+                                <td>{{ item.path }}</td>
+                                <td>{{ item.status }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>

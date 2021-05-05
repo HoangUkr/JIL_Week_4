@@ -11,4 +11,5 @@ urlpatterns = [
     path('create_customer/', views.createCustomer, name="createCustomer"),
     path('create_product/', views.createProduct, name="createProduct"),
     path('report/', views.ReportPage, name="report"),
+    #path('tasks/', views.generate_report_trigger, name="run_task")
 ]
