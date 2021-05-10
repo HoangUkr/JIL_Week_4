@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .task import *
 from celery.result import AsyncResult
 
+task_id = ''
 # Create your views here.
 def home(request):
     orders = Order.objects.all()
@@ -95,17 +96,22 @@ def ReportPage(request):
     generate_btn = request.POST.get('Generate')
     refresh_btn = request.POST.get('Refresh')
     query_result = Report.objects.all()
+    #task_id = ''
+    global task_id
     if generate_btn:
         task = generate_report.apply_async()
         status = get_task_status(task.id)
         a = Report(task_id = task.id, path = status['Path'], status = status['Status'])
         a.save()
+        task_id = task_id + task.id
+        print('Task id = ' + task_id, flush = True)
         query_result = Report.objects.all()
     if refresh_btn:
-        id = Report.objects.latest('task_id')
-        new_status = get_task_status(id)
-        a = Report.objects.get(task_id = id)
-        a.status = str(new_status['Status'])
+        #id = Report.objects.latest('task_id')
+        print('Task id = ' + task_id, flush = True)
+        new_status = get_task_status(task_id)
+        a = Report.objects.get(task_id = task_id)
+        a.status = new_status['Status']
         a.save()
         query_result = Report.objects.all()
 

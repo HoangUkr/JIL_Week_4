@@ -49,5 +49,8 @@ class Report(models.Model):
     task_id = models.CharField(max_length=200, null=True)
     path = models.CharField(max_length=200, null=True)
     status = models.CharField(max_length=200, null=True)
+
+    def __str__(self):
+        return self.task_id
     
     
